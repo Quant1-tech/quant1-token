@@ -1,4 +1,4 @@
-import { tokens } from './helpers';
+import { tokens, EVM_REVERT } from './helpers';
 
 
 const { result } = require('lodash');
@@ -49,7 +49,7 @@ contract('Token', ([deployer, receiver]) => {
         })
     })
 
-    describe('Sending Tokens', () => {
+    describe('Succeeded sending Tokens', () => {
         beforeEach(async() => {
             token = await Token.new()
         })
@@ -79,6 +79,22 @@ contract('Token', ([deployer, receiver]) => {
             event.to.toString().should.eq(receiver, "To is correct")
             event.value.toString().should.eq(amount.toString(), "Value is correct")
 
+        })
+    })
+
+    describe('Failure sending tokens', async() => {
+        let amount
+        beforeEach(async() => {
+            amount = tokens(1000).toString()
+        })
+        it('Rejects insufficient balances', async() => {
+            let invalidAmount
+            invalidAmount = tokens(1000000000000000).toString()
+            await token.transfer(receiver, invalidAmount, { from: deployer }).should.be.rejectedWith(EVM_REVERT)
+        })
+
+        it('Rejects invalid recipients', async() => {
+            await token.transfer(0X0, amount, { from: deployer }).should.be.rejected
         })
     })
 })
