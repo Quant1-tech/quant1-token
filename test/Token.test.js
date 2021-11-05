@@ -1,3 +1,6 @@
+import { tokens } from './helpers';
+
+
 const { result } = require('lodash');
 
 const Token = artifacts.require("Token");
@@ -10,7 +13,7 @@ contract('Token', ([deployer, receiver]) => {
     let token
     const name = 'Quant1 Token'
     const symbol = 'QUT'
-    const totalSupply = "1000000000000000000000000000000"
+    const totalSupply = tokens(1000000000000).toString()
     const decimals = "18"
     beforeEach(async() => {
         // Fetch token from blockchain
@@ -47,20 +50,21 @@ contract('Token', ([deployer, receiver]) => {
     })
 
     describe('Sending Tokens', () => {
+        beforeEach(async() => {
+            token = await Token.new()
+        })
+
         it('Transfer token balances', async() => {
             let receiverBalanceOf = await token.balanceOf(receiver)
             let senderBalanceOf = await token.balanceOf(deployer)
-            console.log("####  Balance Before the transaction: ####")
-            console.log("Receiver balance", receiverBalanceOf.toString())
-            console.log("Sender balance", senderBalanceOf.toString())
 
-            await token.transfer(receiver, 1000)
+            await token.transfer(receiver, tokens(1000), { from: deployer })
 
             receiverBalanceOf = await token.balanceOf(receiver)
             senderBalanceOf = await token.balanceOf(deployer)
-            console.log("####  Balance After the transaction: ####")
-            console.log("Receiver balance", receiverBalanceOf.toString())
-            console.log("Sender balance", senderBalanceOf.toString())
+            senderBalanceOf.toString().should.equal(tokens(999999999000).toString())
+            receiverBalanceOf.toString().should.equal(tokens(1000).toString())
+
         })
     })
 })
