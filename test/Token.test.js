@@ -53,17 +53,31 @@ contract('Token', ([deployer, receiver]) => {
         beforeEach(async() => {
             token = await Token.new()
         })
+        let amount
+        let result
+        beforeEach(async() => {
+            amount = tokens(1000)
+            result = await token.transfer(receiver, amount, { from: deployer })
+        })
 
         it('Transfer token balances', async() => {
             let receiverBalanceOf = await token.balanceOf(receiver)
             let senderBalanceOf = await token.balanceOf(deployer)
 
-            await token.transfer(receiver, tokens(1000), { from: deployer })
-
             receiverBalanceOf = await token.balanceOf(receiver)
             senderBalanceOf = await token.balanceOf(deployer)
             senderBalanceOf.toString().should.equal(tokens(999999999000).toString())
-            receiverBalanceOf.toString().should.equal(tokens(1000).toString())
+            receiverBalanceOf.toString().should.equal(amount.toString())
+        })
+
+        it("Emits a transfer event", async() => {
+            const log = result.logs[0]
+                //console.log(log)
+            log.event.should.eq('Transfer')
+            const event = log.args
+            event.from.toString().should.eq(deployer, "From is correct")
+            event.to.toString().should.eq(receiver, "To is correct")
+            event.value.toString().should.eq(amount.toString(), "Value is correct")
 
         })
     })
