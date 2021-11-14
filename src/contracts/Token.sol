@@ -25,6 +25,18 @@ contract Token {
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
+
+    function transferFrom(address _from, address _to, uint256 _value) public returns (bool succes) {
+        require(_from != address(0));
+        require(_to != address(0));
+        require(balanceOf[_from]>= _value);
+
+        balanceOf[_from] = balanceOf[_from].sub(_value);
+        balanceOf[_to] = balanceOf[_to].add(_value);
+
+        emit Transfer(_from, _to, _value);
+        return true;
+    }
     constructor() public {
         totalSupply= 1000000000000 * (10 ** decimals);
         balanceOf[msg.sender] = totalSupply;
